@@ -3,6 +3,7 @@ import { ConfigManager } from "../core/ConfigManager";
 import { Logger } from "../core/Logger";
 import { LocatorService } from "../services/LocatorService";
 import { LoginLocators } from "../locators/LoginLocators";
+import { NavigationService } from "../services/NavigationService";
 
 export class LoginEngine {
 
@@ -68,6 +69,10 @@ export class LoginEngine {
         await password.fill(config.password);
 
         await submit.click();
+
+        await NavigationService.waitUntilReady(page);
+
+        Logger.success("Login Submitted");
 
         Logger.success("Login Submitted");
 
