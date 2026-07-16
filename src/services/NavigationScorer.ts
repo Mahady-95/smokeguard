@@ -1,32 +1,42 @@
+import { RawElement } from "../models/RawElement";
 import { NavigationItem } from "../models/NavigationItem";
 
 export class NavigationScorer {
 
     public static score(
-        items: NavigationItem[]
+        elements: RawElement[]
     ): NavigationItem[] {
 
-        for (const item of items) {
+        return elements
+            .map((element): NavigationItem => {
 
-            let score = 50;
+                let score = 50;
 
-            const name = item.name.toLowerCase();
+                const text = element.text.toLowerCase();
 
-            if (name.includes("dashboard")) score += 50;
-            if (name.includes("home")) score += 40;
-            if (name.includes("user")) score += 40;
-            if (name.includes("role")) score += 40;
-            if (name.includes("setting")) score += 35;
-            if (name.includes("report")) score += 35;
-            if (name.includes("master")) score += 30;
+                if (text.includes("dashboard")) score += 50;
+                if (text.includes("home")) score += 40;
+                if (text.includes("user")) score += 40;
+                if (text.includes("role")) score += 35;
+                if (text.includes("setting")) score += 35;
+                if (text.includes("report")) score += 30;
 
-            item.score = score;
+                return {
 
-        }
+                    id: crypto.randomUUID(),
 
-        return items.sort(
-            (a, b) => b.score - a.score
-        );
+                    name: element.text,
+
+                    url: element.href,
+
+                    score,
+
+                    source: "link"
+
+                };
+
+            })
+            .sort((a, b) => b.score - a.score);
 
     }
 

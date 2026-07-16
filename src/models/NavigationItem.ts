@@ -6,10 +6,8 @@ export interface NavigationItem {
 
     url: string;
 
-    level: number;
+    score: number;
 
     source: "link" | "button" | "menu";
-
-    score: number;
 
 }

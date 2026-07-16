@@ -76,8 +76,6 @@ export class NavigationDiscoverer {
 
                     url: href,
 
-                    level: 0,
-
                     source: "link",
                     
                     score: 0
