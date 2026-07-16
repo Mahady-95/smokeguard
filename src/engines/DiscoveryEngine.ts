@@ -1,53 +1,58 @@
 import { BrowserManager } from "../core/BrowserManager";
 import { Logger } from "../core/Logger";
-import { QueueService } from "../services/QueueService";
-import { NavigationDiscoverer } from "../discoverers/NavigationDiscoverer";
-import { NavigationService } from "../services/NavigationService";
+
+import { DOMDiscoverer } from "../discoverers/DOMDiscoverer";
+
 import { ElementFilter } from "../services/ElementFilter";
 import { NavigationScorer } from "../services/NavigationScorer";
+import { QueueService } from "../services/QueueService";
 
 export class DiscoveryEngine {
 
     public static async discover(): Promise<void> {
 
-        Logger.step("Discovering Navigation");
+        Logger.step("Discovering DOM");
 
         const page = BrowserManager.getPage();
 
-        await NavigationService.waitUntilReady(page);
+        const rawElements =
+            await DOMDiscoverer.discover(page);
 
-        const items = await NavigationDiscoverer.discover(page);
+        Logger.info(
+            `Raw Elements : ${rawElements.length}`
+        );
 
-        //QueueService.enqueueMany(items);
-        const filtered = ElementFilter.filter(items);
+        const filtered =
+            ElementFilter.filter(rawElements);
 
-        const scored = NavigationScorer.score(filtered);
+        Logger.info(
+            `Filtered Elements : ${filtered.length}`
+        );
 
-        QueueService.enqueueMany(scored);
+        const navigation =
+            NavigationScorer.score(filtered);
 
-        Logger.success(`${QueueService.size()} navigation item(s) discovered`);
+        Logger.info(
+            `Navigation Items : ${navigation.length}`
+        );
 
-        const queue = QueueService.getAll();
+        QueueService.clear();
+
+        QueueService.enqueueMany(navigation);
 
         Logger.info("");
+        Logger.info("========== Navigation Queue ==========");
 
-        Logger.info("=========== Navigation Queue ===========");
-
-        queue.forEach((item, index) => {
+        QueueService.getAll().forEach((item, index) => {
 
             Logger.info(
-
-                `${index + 1}. [${item.score}] ${item.name} -> ${item.url}`
-
+                `${index + 1}. [${item.score}] ${item.name}`
             );
 
         });
 
-        Logger.info("========================================");
-
         Logger.info("======================================");
 
     }
-
 
 }

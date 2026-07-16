@@ -8,4 +8,8 @@ export interface RawElement {
 
     visible: boolean;
 
+    enabled: boolean;
+
+    depth: number;
+
 }

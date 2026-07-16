@@ -1,10 +1,8 @@
-import { NavigationItem } from "../models/NavigationItem";
+import { RawElement } from "../models/RawElement";
 
 export class ElementFilter {
 
     private static readonly blacklist = [
-
-        "",
 
         "logout",
         "log out",
@@ -14,37 +12,51 @@ export class ElementFilter {
         "remove",
 
         "close",
-        "cancel",
-
-        "privacy",
-        "terms",
-
-        "facebook",
-        "twitter",
-        "linkedin",
-
-        "youtube",
-        "instagram"
+        "cancel"
 
     ];
 
     public static filter(
-        items: NavigationItem[]
-    ): NavigationItem[] {
+        elements: RawElement[]
+    ): RawElement[] {
 
-        return items.filter(item => {
+        return elements.filter(element => {
 
-            const name = item.name.trim().toLowerCase();
+            const text = element.text.trim();
 
-            if (!name) {
-
+            if (!text) {
                 return false;
-
             }
 
-            return !this.blacklist.some(word =>
-                name.includes(word)
-            );
+            if (!element.visible) {
+                return false;
+            }
+
+            if (!element.enabled) {
+                return false;
+            }
+
+            const href = element.href.toLowerCase();
+
+            if (
+                href.startsWith("javascript:") ||
+                href.startsWith("mailto:") ||
+                href.startsWith("tel:")
+            ) {
+                return false;
+            }
+
+            const lower = text.toLowerCase();
+
+            if (
+                this.blacklist.some(word =>
+                    lower.includes(word)
+                )
+            ) {
+                return false;
+            }
+
+            return true;
 
         });
 
