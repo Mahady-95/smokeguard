@@ -1,8 +1,10 @@
 import { BrowserManager } from "../core/BrowserManager";
 import { LoginEngine } from "./LoginEngine";
+import { CrawlerEngine } from "./CrawlerEngine";
 import { ConfigManager } from "../core/ConfigManager";
 import { Logger } from "../core/Logger";
 import { SessionManager } from "../core/SessionManager";
+
 
 export class ExecutionManager {
 
@@ -28,6 +30,7 @@ export class ExecutionManager {
 
             Logger.success("Browser Started");
             await LoginEngine.login();
+            await CrawlerEngine.crawl();
 
         }
 

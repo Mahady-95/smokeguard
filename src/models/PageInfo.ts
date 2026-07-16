@@ -4,6 +4,4 @@ export interface PageInfo {
 
     url: string;
 
-    source: string;
-
 }
