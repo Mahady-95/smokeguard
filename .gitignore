@@ -1,0 +1,9 @@
+.env
+
+runs/
+
+playwright-report/
+
+test-results/
+
+node_modules/
