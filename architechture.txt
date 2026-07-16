@@ -1,0 +1,71 @@
+Folder Structure
+SmokeGuard/
+
+src/
+
+├── core/
+│   ├── BrowserManager.ts
+│   ├── ConfigManager.ts
+│   ├── Logger.ts
+│   ├── SessionManager.ts
+│
+├── engines/
+│   ├── ExecutionManager.ts
+│   ├── LoginEngine.ts
+│   ├── DiscoveryEngine.ts
+│   ├── CrawlerEngine.ts
+│
+├── services/
+│   ├── LocatorService.ts
+│   ├── QueueService.ts
+│   ├── NavigationService.ts
+│
+├── discoverers/
+│   ├── NavigationDiscoverer.ts
+│   ├── DOMDiscoverer.ts
+│
+├── validators/
+│   ├── PageValidator.ts
+│   ├── ConsoleValidator.ts
+│   ├── NetworkValidator.ts
+│
+├── reports/
+│   ├── HtmlReport.ts
+│
+├── models/
+│   ├── NavigationItem.ts
+│   ├── ValidationResult.ts
+│
+├── plugins/
+│
+└── interfaces/
+
+SmokeGuard v1 Architecture
+
+                    SmokeGuard
+
+                       │
+                       ▼
+              Execution Engine
+                       │
+      ┌────────────────┼────────────────┐
+      ▼                ▼                ▼
+ Config          Browser         Session/Logger
+                       │
+                       ▼
+                 Login Engine
+                       │
+                       ▼
+              Discovery Engine
+                       │
+                       ▼
+              Navigation Queue
+                       │
+                       ▼
+                Crawler Engine
+                       │
+                       ▼
+             Validation Engine
+                       │
+                       ▼
+               Report Engine
