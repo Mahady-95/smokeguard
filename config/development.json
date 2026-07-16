@@ -1,0 +1,10 @@
+{
+    "applicationName": "LVMS",
+    "baseUrl": "https://demo.guru99.com/V1/index.php",
+    "browser": "chromium",
+    "headless": true,
+    "timeout": 30000,
+    "retry": 2,
+    "username": "mngr570973",
+    "password": "YjAbegy"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "smokeguard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "smoke": "playwright test",
+    "smoke:dev": "cross-env TEST_ENV=development playwright test",
+    "smoke:staging": "cross-env TEST_ENV=staging playwright test",
+    "smoke:prod": "cross-env TEST_ENV=production playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.1",
+    "cross-env": "^10.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "winston": "^3.19.0"
+  }
+}
