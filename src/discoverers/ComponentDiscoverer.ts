@@ -1,7 +1,6 @@
 import { Page } from "@playwright/test";
 
 import { ComponentInventory } from "../models/ComponentInventory";
-import { Component } from "../models/Component";
 
 export class ComponentDiscoverer {
 
@@ -11,100 +10,410 @@ export class ComponentDiscoverer {
 
         return await page.evaluate(() => {
 
-            const inputs = Array.from(
-                document.querySelectorAll("input")
-            );
+            const getRole = (
+                node: HTMLElement,
+                tag: string
+            ): string => {
 
-            const elements: Component[] = [];
+                const explicitRole =
+                    node.getAttribute("role");
 
-            document
-                .querySelectorAll(
-                    "button,input,select,textarea,a"
-                )
-                .forEach(node => {
+                if (explicitRole) {
 
-                    const element =
-                        node as HTMLElement;
+                    return explicitRole;
 
-                    const input =
-                        node as HTMLInputElement;
+                }
 
-                    const selector = (() => {
+                if (tag === "button") {
 
-                        if (input.id) {
+                    return "button";
 
-                            return `#${input.id}`;
+                }
 
-                        }
+                if (tag === "a") {
 
-                        if (input.name) {
+                    return "link";
 
-                            return `[name="${input.name}"]`;
+                }
 
-                        }
+                if (tag === "select") {
 
-                        return node.tagName.toLowerCase();
+                    return "combobox";
 
-                    })();
+                }
 
-                    elements.push({
+                if (tag === "textarea") {
 
-                        type:
-                            input.type ||
-                            node.tagName.toLowerCase(),
+                    return "textbox";
 
-                        tag:
-                            node.tagName.toLowerCase(),
+                }
 
-                        text:
-                            element.innerText?.trim() ||
+                if (tag === "input") {
 
-                            input.value ||
+                    const type =
+                        (
+                            node.getAttribute("type") ||
+                            "text"
+                        ).toLowerCase();
 
-                            "",
+                    if (
+                        type === "checkbox"
+                    ) {
 
-                        id:
-                            input.id || "",
+                        return "checkbox";
 
-                        name:
-                            input.name || "",
+                    }
 
-                        placeholder:
-                            input.placeholder || "",
+                    if (
+                        type === "radio"
+                    ) {
+
+                        return "radio";
+
+                    }
+
+                    if (
+                        type === "button" ||
+                        type === "submit" ||
+                        type === "reset"
+                    ) {
+
+                        return "button";
+
+                    }
+
+                    return "textbox";
+
+                }
+
+                return "";
+
+            };
+
+            const getLabel = (
+                node: HTMLElement,
+                id: string
+            ): string => {
+
+                if (id) {
+
+                    const escapedId =
+                        id.replace(
+                            /(["\\])/g,
+                            "\\$1"
+                        );
+
+                    const explicitLabel =
+                        document.querySelector<HTMLLabelElement>(
+                            `label[for="${escapedId}"]`
+                        );
+
+                    if (explicitLabel) {
+
+                        return (
+                            explicitLabel.innerText ||
+                            explicitLabel.textContent ||
+                            ""
+                        ).trim();
+
+                    }
+
+                }
+
+                const parentLabel =
+                    node.closest("label");
+
+                if (parentLabel) {
+
+                    return (
+                        parentLabel.innerText ||
+                        parentLabel.textContent ||
+                        ""
+                    ).trim();
+
+                }
+
+                return "";
+
+            };
+
+            const isVisible = (
+                node: HTMLElement
+            ): boolean => {
+
+                const style =
+                    window.getComputedStyle(node);
+
+                const rectangle =
+                    node.getBoundingClientRect();
+
+                return (
+
+                    style.display !== "none" &&
+
+                    style.visibility !== "hidden" &&
+
+                    Number(style.opacity) > 0 &&
+
+                    rectangle.width > 0 &&
+
+                    rectangle.height > 0
+
+                );
+
+            };
+
+            const escapeCss = (
+                value: string
+            ): string => {
+
+                if (
+                    typeof CSS !== "undefined" &&
+                    typeof CSS.escape === "function"
+                ) {
+
+                    return CSS.escape(value);
+
+                }
+
+                return value.replace(
+                    /([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g,
+                    "\\$1"
+                );
+
+            };
+
+            const escapeAttribute = (
+                value: string
+            ): string => {
+
+                return value
+                    .replace(/\\/g, "\\\\")
+                    .replace(/"/g, '\\"');
+
+            };
+
+            const buildSelector = (
+                node: HTMLElement,
+                tag: string,
+                id: string,
+                name: string,
+                testId: string
+            ): string => {
+
+                if (testId) {
+
+                    return `[data-testid="${escapeAttribute(testId)}"]`;
+
+                }
+
+                if (id) {
+
+                    return `#${escapeCss(id)}`;
+
+                }
+
+                if (name) {
+
+                    return `${tag}[name="${escapeAttribute(name)}"]`;
+
+                }
+
+                const parent =
+                    node.parentElement;
+
+                if (!parent) {
+
+                    return tag;
+
+                }
+
+                const sameTagElements =
+                    Array.from(
+                        parent.children
+                    ).filter(child =>
+
+                        child.tagName.toLowerCase() ===
+                        tag
+
+                    );
+
+                if (
+                    sameTagElements.length === 1
+                ) {
+
+                    return tag;
+
+                }
+
+                const index =
+                    sameTagElements.indexOf(node) + 1;
+
+                return `${tag}:nth-of-type(${index})`;
+
+            };
+
+            const inputElements =
+                Array.from(
+                    document.querySelectorAll<HTMLInputElement>(
+                        "input"
+                    )
+                );
+
+            const discoveredElements =
+                Array.from(
+                    document.querySelectorAll<HTMLElement>(
+                        "button,input,select,textarea,a"
+                    )
+                );
+
+            const elements =
+                discoveredElements.map(node => {
+
+                    const tag =
+                        node.tagName.toLowerCase();
+
+                    const id =
+                        node.getAttribute("id") || "";
+
+                    const name =
+                        node.getAttribute("name") || "";
+
+                    const placeholder =
+                        node.getAttribute(
+                            "placeholder"
+                        ) || "";
+
+                    const ariaLabel =
+                        node.getAttribute(
+                            "aria-label"
+                        ) || "";
+
+                    const role =
+                        getRole(
+                            node,
+                            tag
+                        );
+
+                    const label =
+                        getLabel(
+                            node,
+                            id
+                        );
+
+                    const testId =
+                        node.getAttribute(
+                            "data-testid"
+                        ) ||
+                        node.getAttribute(
+                            "data-test-id"
+                        ) ||
+                        node.getAttribute(
+                            "data-test"
+                        ) ||
+                        "";
+
+                    const text =
+                        (
+                            node.innerText ||
+                            node.getAttribute(
+                                "value"
+                            ) ||
+                            ""
+                        ).trim();
+
+                    const type =
+                        node.getAttribute(
+                            "type"
+                        ) ||
+                        role ||
+                        tag;
+
+                    const selector =
+                        buildSelector(
+                            node,
+                            tag,
+                            id,
+                            name,
+                            testId
+                        );
+
+                    const visible =
+                        isVisible(node);
+
+                    const disabled =
+                        node.hasAttribute(
+                            "disabled"
+                        );
+
+                    const ariaDisabled =
+                        node.getAttribute(
+                            "aria-disabled"
+                        ) === "true";
+
+                    return {
+
+                        type,
+
+                        tag,
+
+                        text,
+
+                        id,
+
+                        name,
+
+                        placeholder,
+
+                        ariaLabel,
+
+                        role,
+
+                        label,
+
+                        testId,
 
                         selector,
 
-                        visible:
-                            element.offsetParent !== null,
+                        visible,
 
                         enabled:
-                            !input.disabled
+                            !disabled &&
+                            !ariaDisabled
 
-                    });
+                    };
 
                 });
 
             return {
 
                 forms:
-                    document.querySelectorAll("form").length,
+                    document.querySelectorAll(
+                        "form"
+                    ).length,
 
                 inputs:
-                    inputs.length,
+                    inputElements.length,
 
                 buttons:
                     document.querySelectorAll(
-                        "button,input[type='button'],input[type='submit']"
+                        "button,input[type='button'],input[type='submit'],input[type='reset']"
                     ).length,
 
                 links:
-                    document.querySelectorAll("a").length,
+                    document.querySelectorAll(
+                        "a"
+                    ).length,
 
                 tables:
-                    document.querySelectorAll("table").length,
+                    document.querySelectorAll(
+                        "table"
+                    ).length,
 
                 dropdowns:
-                    document.querySelectorAll("select").length,
+                    document.querySelectorAll(
+                        "select"
+                    ).length,
 
                 checkboxes:
                     document.querySelectorAll(
@@ -117,10 +426,14 @@ export class ComponentDiscoverer {
                     ).length,
 
                 textareas:
-                    document.querySelectorAll("textarea").length,
+                    document.querySelectorAll(
+                        "textarea"
+                    ).length,
 
                 images:
-                    document.querySelectorAll("img").length,
+                    document.querySelectorAll(
+                        "img"
+                    ).length,
 
                 fileUploads:
                     document.querySelectorAll(
@@ -128,29 +441,43 @@ export class ComponentDiscoverer {
                     ).length,
 
                 searchBoxes:
-                    inputs.filter(input => {
+                    inputElements.filter(input => {
 
-                        const type =
-                            input.type.toLowerCase();
+                        const values = [
 
-                        const name =
-                            (input.name || "").toLowerCase();
+                            input.type,
 
-                        const id =
-                            (input.id || "").toLowerCase();
+                            input.name,
 
-                        const placeholder =
-                            (input.placeholder || "").toLowerCase();
+                            input.id,
+
+                            input.placeholder,
+
+                            input.getAttribute(
+                                "aria-label"
+                            ) || ""
+
+                        ].map(value =>
+
+                            (
+                                value ||
+                                ""
+                            ).toLowerCase()
+
+                        );
 
                         return (
 
-                            type === "search" ||
+                            values[0] ===
+                            "search" ||
 
-                            name.includes("search") ||
+                            values.some(value =>
 
-                            id.includes("search") ||
+                                value.includes(
+                                    "search"
+                                )
 
-                            placeholder.includes("search")
+                            )
 
                         );
 
@@ -158,12 +485,12 @@ export class ComponentDiscoverer {
 
                 paginations:
                     document.querySelectorAll(
-                        ".pagination,.pager,[aria-label*=pagination i]"
+                        ".pagination,.pager,[aria-label*='pagination' i]"
                     ).length,
 
                 filters:
                     document.querySelectorAll(
-                        ".filter,.filters,[data-filter]"
+                        ".filter,.filters,[data-filter],[aria-label*='filter' i]"
                     ).length,
 
                 elements
