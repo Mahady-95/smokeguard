@@ -5,6 +5,7 @@ import { ConfigManager } from "../core/ConfigManager";
 import { Logger } from "../core/Logger";
 import { SessionManager } from "../core/SessionManager";
 import { DiscoveryEngine } from "./DiscoveryEngine";
+import { ReportEngine } from "./ReportEngine";
 
 
 export class ExecutionManager {
@@ -32,7 +33,8 @@ export class ExecutionManager {
             Logger.success("Browser Started");
             await LoginEngine.login();
             await DiscoveryEngine.discover();
-            //await CrawlerEngine.crawl();
+            await CrawlerEngine.crawl();
+            await ReportEngine.generate();
 
         }
 
