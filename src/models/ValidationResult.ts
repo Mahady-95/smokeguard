@@ -1,3 +1,5 @@
+import { ComponentInventory } from "./ComponentInventory";
+
 export interface ValidationResult {
 
     pageName: string;
@@ -17,5 +19,7 @@ export interface ValidationResult {
     networkErrors: string[];
 
     timestamp: string;
+
+    components: ComponentInventory;
 
 }

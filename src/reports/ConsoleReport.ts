@@ -5,37 +5,65 @@ export class ConsoleReport {
 
     public static generate(): void {
 
-        Logger.info("");
-
-        Logger.info("========== SmokeGuard Report ==========");
-
-        Logger.info(
-            `Total Pages : ${ResultManager.total()}`
-        );
-
-        Logger.info(
-            `Passed     : ${ResultManager.passed()}`
-        );
-
-        Logger.info(
-            `Failed     : ${ResultManager.failed()}`
-        );
+        const results = ResultManager.getAll();
 
         Logger.info("");
 
-        ResultManager.getAll().forEach(result => {
+        Logger.info("============= SmokeGuard Report =============");
+
+        Logger.info(`Total Pages : ${ResultManager.total()}`);
+        Logger.info(`Passed      : ${ResultManager.passed()}`);
+        Logger.info(`Failed      : ${ResultManager.failed()}`);
+
+        Logger.info("");
+
+        results.forEach(result => {
 
             Logger.info(
-
-                `${result.passed ? "✅" : "❌"} ${result.pageName}`
-
+                `${result.passed ? "✅" : "❌"} ${result.pageName} (${result.executionTime} ms)`
             );
+
+            if (!result.passed) {
+
+                if (result.consoleErrors.length > 0) {
+
+                    Logger.warn("   Console:");
+
+                    result.consoleErrors.forEach(error =>
+
+                        Logger.warn(`      • ${error}`)
+
+                    );
+
+                }
+
+                if (result.networkErrors.length > 0) {
+
+                    Logger.warn("   Network:");
+
+                    result.networkErrors.forEach(error =>
+
+                        Logger.warn(`      • ${error}`)
+
+                    );
+
+                }
+
+                if (result.screenshot) {
+
+                    Logger.info(`   Screenshot : ${result.screenshot}`);
+
+                }
+
+            }
 
         });
 
         Logger.info("");
 
-        Logger.info("=======================================");
+        Logger.info("=============================================");
+
+        Logger.info("");
 
     }
 

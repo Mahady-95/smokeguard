@@ -1,0 +1,283 @@
+export class HtmlTemplate {
+
+    public static render(
+
+        total: number,
+
+        passed: number,
+
+        failed: number,
+
+        generatedAt: string,
+
+        rows: string
+
+    ): string {
+
+        const passRate =
+            total === 0
+                ? 0
+                : ((passed / total) * 100).toFixed(1);
+
+        return `
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>SmokeGuard Report</title>
+
+<style>
+
+*{
+
+box-sizing:border-box;
+
+}
+
+body{
+
+font-family:Segoe UI,Arial,sans-serif;
+
+background:#f4f6f9;
+
+margin:40px;
+
+}
+
+.header{
+
+margin-bottom:30px;
+
+}
+
+.cards{
+
+display:flex;
+
+gap:20px;
+
+margin-bottom:30px;
+
+flex-wrap:wrap;
+
+}
+
+.card{
+
+background:white;
+
+padding:20px;
+
+border-radius:10px;
+
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+min-width:180px;
+
+}
+
+.card h2{
+
+margin:0;
+
+font-size:32px;
+
+}
+
+.card p{
+
+margin-top:10px;
+
+color:#666;
+
+}
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+background:white;
+
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+th{
+
+background:#111827;
+
+color:white;
+
+padding:14px;
+
+}
+
+td{
+
+padding:12px;
+
+border-bottom:1px solid #ececec;
+
+vertical-align:middle;
+
+}
+
+tr:hover{
+
+background:#fafafa;
+
+}
+
+.badge{
+
+padding:6px 12px;
+
+border-radius:20px;
+
+font-size:12px;
+
+font-weight:bold;
+
+display:inline-block;
+
+}
+
+.pass{
+
+background:#dcfce7;
+
+color:#15803d;
+
+}
+
+.fail{
+
+background:#fee2e2;
+
+color:#b91c1c;
+
+}
+
+.slow{
+
+background:#fff7ed;
+
+}
+
+img{
+
+width:120px;
+
+border-radius:6px;
+
+border:1px solid #ddd;
+
+}
+
+a{
+
+text-decoration:none;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<h1>SmokeGuard Report</h1>
+
+<p>${generatedAt}</p>
+
+</div>
+
+<div class="cards">
+
+<div class="card">
+
+<h2>${total}</h2>
+
+<p>Total Pages</p>
+
+</div>
+
+<div class="card">
+
+<h2 style="color:#16a34a">
+
+${passed}
+
+</h2>
+
+<p>Passed</p>
+
+</div>
+
+<div class="card">
+
+<h2 style="color:#dc2626">
+
+${failed}
+
+</h2>
+
+<p>Failed</p>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+${passRate}%
+
+</h2>
+
+<p>Pass Rate</p>
+
+</div>
+
+</div>
+
+<table>
+
+<tr>
+
+<th>Page</th>
+
+<th>Time</th>
+
+<th>Loaded</th>
+
+<th>Console</th>
+
+<th>Network</th>
+
+<th>Screenshot</th>
+
+<th>Status</th>
+
+</tr>
+
+${rows}
+
+</table>
+
+</body>
+
+</html>
+
+`;
+
+    }
+
+}

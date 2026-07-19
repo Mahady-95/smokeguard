@@ -4,16 +4,22 @@ import { Logger } from "../core/Logger";
 import { ResultManager } from "../core/ResultManager";
 
 import { QueueService } from "../services/QueueService";
+import { ComponentService } from "../services/ComponentService";
 
 import { ValidationResult } from "../models/ValidationResult";
+import { ComponentInventory } from "../models/ComponentInventory";
 
 import { PageLoadValidator } from "../validators/PageLoadValidator";
+
+import { ScreenshotManager } from "../managers/ScreenshotManager";
 
 export class CrawlerEngine {
 
     public static async crawl(): Promise<void> {
 
         ResultManager.clear();
+
+        ScreenshotManager.reset();
 
         const page = BrowserManager.getPage();
 
@@ -22,7 +28,9 @@ export class CrawlerEngine {
             const item = QueueService.dequeue();
 
             if (!item) {
+
                 continue;
+
             }
 
             Logger.step(`Visiting : ${item.name}`);
@@ -34,7 +42,9 @@ export class CrawlerEngine {
             try {
 
                 await page.goto(item.url, {
+
                     waitUntil: "domcontentloaded"
+
                 });
 
                 const executionTime =
@@ -49,16 +59,21 @@ export class CrawlerEngine {
                 const networkErrors =
                     EventManager.getNetworkErrors();
 
+                const components: ComponentInventory =
+                    await ComponentService.discover(page);
+
+                const passed =
+                    pageLoaded &&
+                    consoleErrors.length === 0 &&
+                    networkErrors.length === 0;
+
                 const result: ValidationResult = {
 
                     pageName: item.name,
 
                     url: item.url,
 
-                    passed:
-                        pageLoaded &&
-                        consoleErrors.length === 0 &&
-                        networkErrors.length === 0,
+                    passed,
 
                     pageLoaded,
 
@@ -71,19 +86,22 @@ export class CrawlerEngine {
                     networkErrors,
 
                     timestamp:
-                        new Date().toISOString()
+                        new Date().toISOString(),
+
+                    components
 
                 };
 
                 ResultManager.add(result);
 
-                if (result.passed) {
+                if (passed) {
 
                     Logger.success(
                         `${item.name} (${executionTime} ms)`
                     );
 
                 }
+
                 else {
 
                     Logger.warn(item.name);
@@ -128,6 +146,40 @@ export class CrawlerEngine {
 
                 );
 
+                const emptyComponents: ComponentInventory = {
+
+                    forms: 0,
+
+                    inputs: 0,
+
+                    buttons: 0,
+
+                    links: 0,
+
+                    tables: 0,
+
+                    dropdowns: 0,
+
+                    checkboxes: 0,
+
+                    radios: 0,
+
+                    textareas: 0,
+
+                    images: 0,
+
+                    fileUploads: 0,
+
+                    searchBoxes: 0,
+
+                    paginations: 0,
+
+                    filters: 0,
+
+                    elements: []
+
+                };
+
                 ResultManager.add({
 
                     pageName: item.name,
@@ -147,13 +199,17 @@ export class CrawlerEngine {
                     networkErrors: [],
 
                     timestamp:
-                        new Date().toISOString()
+                        new Date().toISOString(),
+
+                    components: emptyComponents
 
                 });
 
             }
 
         }
+
+        Logger.info("");
 
     }
 
