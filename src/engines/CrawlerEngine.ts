@@ -1,55 +1,139 @@
-// import { BrowserManager } from "../core/BrowserManager";
-// import { Logger } from "../core/Logger";
-// import { NavigationService } from "../services/NavigationService";
+import { BrowserManager } from "../core/BrowserManager";
+import { EventManager } from "../core/EventManager";
+import { Logger } from "../core/Logger";
+import { ResultManager } from "../core/ResultManager";
 
-// export class CrawlerEngine {
+import { QueueService } from "../services/QueueService";
 
-//     public static async crawl(): Promise<void> {
+import { ValidationResult } from "../models/ValidationResult";
 
-//         const page = BrowserManager.getPage();
-
-//         Logger.step("Discovering Pages");
-
-//         const pages = await NavigationService.discover(page);
-
-//         Logger.success(`${pages.length} page(s) discovered`);
-
-//         for (const item of pages) {
-
-//             try {
-
-//                 Logger.step(`Visiting : ${item.title}`);
-
-//                 await page.goto(item.url);
-
-//                 Logger.success(await page.title());
-
-//             }
-
-//             catch (error) {
-
-//                 Logger.error(
-
-//                     `Failed : ${item.title}`
-
-//                 );
-
-//             }
-
-//         }
-
-//     }
-
-// }
+import { PageLoadValidator } from "../validators/PageLoadValidator";
 
 export class CrawlerEngine {
 
     public static async crawl(): Promise<void> {
 
-        // TODO:
-        // Crawler will be implemented after
-        // Discovery Engine is completed.
+        ResultManager.clear();
 
+        const page = BrowserManager.getPage();
+
+        while (!QueueService.isEmpty()) {
+
+            const item = QueueService.dequeue();
+
+            if (!item) {
+                continue;
+            }
+
+            Logger.step(`Visiting : ${item.name}`);
+
+            EventManager.reset();
+
+            try {
+
+                await page.goto(item.url, {
+                    waitUntil: "domcontentloaded"
+                });
+
+                const pageLoaded =
+                    await PageLoadValidator.validate(page);
+
+                const consoleErrors =
+                    EventManager.getConsoleErrors();
+
+                const networkErrors =
+                    EventManager.getNetworkErrors();
+
+                const result: ValidationResult = {
+
+                    pageName: item.name,
+
+                    url: item.url,
+
+                    passed:
+                        pageLoaded &&
+                        consoleErrors.length === 0 &&
+                        networkErrors.length === 0,
+
+                    pageLoaded,
+
+                    consoleErrors,
+
+                    networkErrors
+
+                };
+
+                ResultManager.add(result);
+
+                if (result.passed) {
+
+                    Logger.success(item.name);
+
+                } else {
+
+                    Logger.warn(item.name);
+
+                    if (consoleErrors.length > 0) {
+
+                        Logger.warn("Console Errors:");
+
+                        consoleErrors.forEach(error =>
+
+                            Logger.warn(`  • ${error}`)
+
+                        );
+
+                    }
+
+                    if (networkErrors.length > 0) {
+
+                        Logger.warn("Network Errors:");
+
+                        networkErrors.forEach(error =>
+
+                            Logger.warn(`  • ${error}`)
+
+                        );
+
+                    }
+
+                }
+
+            }
+
+            catch (error) {
+
+                Logger.error(`Failed : ${item.name}`);
+
+                Logger.error(
+
+                    error instanceof Error
+                        ? error.message
+                        : String(error)
+
+                );
+
+                ResultManager.add({
+
+                    pageName: item.name,
+
+                    url: item.url,
+
+                    passed: false,
+
+                    pageLoaded: false,
+
+                    consoleErrors: [],
+
+                    networkErrors: []
+
+                });
+
+            }
+
+        }
+
+        Logger.info("");
     }
 
 }

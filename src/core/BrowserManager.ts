@@ -9,6 +9,8 @@ import {
 
 import { ConfigManager } from "./ConfigManager";
 import { Logger } from "./Logger";
+import { EventManager } from "./EventManager";
+
 
 export class BrowserManager {
 
@@ -50,6 +52,7 @@ export class BrowserManager {
 
                 break;
 
+
         }
 
         this.context = await this.browser.newContext({
@@ -71,6 +74,8 @@ export class BrowserManager {
         this.page = await this.context.newPage();
 
         this.page.setDefaultTimeout(config.timeout);
+
+        EventManager.initialize(this.page);
 
     }
 
