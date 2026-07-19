@@ -12,6 +12,14 @@ export interface Component {
 
     placeholder: string;
 
+    ariaLabel: string;
+
+    role: string;
+
+    label: string;
+
+    testId: string;
+
     selector: string;
 
     visible: boolean;
