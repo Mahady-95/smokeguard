@@ -29,11 +29,16 @@ export class CrawlerEngine {
 
             EventManager.reset();
 
+            const started = Date.now();
+
             try {
 
                 await page.goto(item.url, {
                     waitUntil: "domcontentloaded"
                 });
+
+                const executionTime =
+                    Date.now() - started;
 
                 const pageLoaded =
                     await PageLoadValidator.validate(page);
@@ -57,9 +62,16 @@ export class CrawlerEngine {
 
                     pageLoaded,
 
+                    executionTime,
+
+                    screenshot: null,
+
                     consoleErrors,
 
-                    networkErrors
+                    networkErrors,
+
+                    timestamp:
+                        new Date().toISOString()
 
                 };
 
@@ -67,9 +79,12 @@ export class CrawlerEngine {
 
                 if (result.passed) {
 
-                    Logger.success(item.name);
+                    Logger.success(
+                        `${item.name} (${executionTime} ms)`
+                    );
 
-                } else {
+                }
+                else {
 
                     Logger.warn(item.name);
 
@@ -123,9 +138,16 @@ export class CrawlerEngine {
 
                     pageLoaded: false,
 
+                    executionTime: 0,
+
+                    screenshot: null,
+
                     consoleErrors: [],
 
-                    networkErrors: []
+                    networkErrors: [],
+
+                    timestamp:
+                        new Date().toISOString()
 
                 });
 
@@ -133,7 +155,6 @@ export class CrawlerEngine {
 
         }
 
-        Logger.info("");
     }
 
 }

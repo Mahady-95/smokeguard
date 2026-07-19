@@ -8,8 +8,14 @@ export interface ValidationResult {
 
     pageLoaded: boolean;
 
+    executionTime: number;
+
+    screenshot: string | null;
+
     consoleErrors: string[];
 
     networkErrors: string[];
+
+    timestamp: string;
 
 }

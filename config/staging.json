@@ -6,5 +6,12 @@
     "browser": "chromium",
     "headless": true,
     "timeout": 30000,
-    "retry": 2
+    "retry": 2,
+    "screenshot": {
+
+    "mode": "failed",
+
+    "fullPage": true
+
+}
 }
