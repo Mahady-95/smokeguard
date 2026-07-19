@@ -1,4 +1,5 @@
 export interface IConfig {
+
     applicationName: string;
 
     baseUrl: string;
@@ -14,4 +15,13 @@ export interface IConfig {
     timeout: number;
 
     retry: number;
+
+    screenshot: {
+
+        mode: "always" | "failed" | "never";
+
+        fullPage: boolean;
+
+    };
+
 }

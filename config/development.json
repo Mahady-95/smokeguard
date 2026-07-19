@@ -1,8 +1,26 @@
 {
-    "applicationName": "LVMS",
+    "applicationName": "SmokeGuard Demo",
+
     "baseUrl": "https://demo.guru99.com/V1/index.php",
+
+    "username": "${USERNAME}",
+
+    "password": "${PASSWORD}",
+
     "browser": "chromium",
-    "headless": true,
+
+    "headless": false,
+
     "timeout": 30000,
-    "retry": 2
+
+    "retry": 2,
+
+    "screenshot": {
+
+        "mode": "failed",
+
+        "fullPage": true
+
+    }
+
 }
