@@ -19,6 +19,15 @@ export class LoginEngine {
 
         Logger.success("Login Page Loaded");
 
+        await page.waitForLoadState("networkidle");
+
+        await page.waitForTimeout(2000);
+
+        await page.screenshot({
+            path: "login-page.png",
+            fullPage: true
+        });
+
         Logger.step("Finding Login Elements");
 
         let username = await LocatorService.find(
