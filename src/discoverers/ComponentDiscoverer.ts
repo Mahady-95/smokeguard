@@ -380,6 +380,11 @@ export class ComponentDiscoverer {
                         enabled:
                             !disabled &&
                             !ariaDisabled
+                        ,
+                        validated:false,
+                        
+                        locator: ""
+
 
                     };
 

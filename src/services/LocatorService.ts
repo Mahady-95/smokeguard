@@ -18,13 +18,21 @@ export class LocatorService {
 
         for (const selector of locators) {
 
-            const locator = page.locator(selector).first();
-
             try {
 
-                if (await locator.count() > 0) {
+                const locator = page.locator(selector);
 
-                    return locator;
+                const count = await locator.count();
+
+                for (let i = 0; i < count; i++) {
+
+                    const candidate = locator.nth(i);
+
+                    if (await candidate.isVisible()) {
+
+                        return candidate;
+
+                    }
 
                 }
 
@@ -41,69 +49,88 @@ export class LocatorService {
         return null;
 
     }
+
+    /**
+     * Smart login input discovery
+     */
     public static async findByInputAnalysis(
-    page: Page
-): Promise<Locator | null> {
 
-    const inputs = page.locator(
-        "input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset'])"
-    );
+        page: Page
 
-    const count = await inputs.count();
+    ): Promise<Locator | null> {
 
-    let fallback: Locator | null = null;
+        const inputs = page.locator(
 
-    for (let i = 0; i < count; i++) {
+            "input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset'])"
 
-        const input = inputs.nth(i);
+        );
 
-        const type = (
-            (await input.getAttribute("type")) || ""
-        ).toLowerCase();
+        const count = await inputs.count();
 
-        const id = (
-            (await input.getAttribute("id")) || ""
-        ).toLowerCase();
+        let fallback: Locator | null = null;
 
-        const name = (
-            (await input.getAttribute("name")) || ""
-        ).toLowerCase();
+        for (let i = 0; i < count; i++) {
 
-        const placeholder = (
-            (await input.getAttribute("placeholder")) || ""
-        ).toLowerCase();
+            const input = inputs.nth(i);
 
-        const aria = (
-            (await input.getAttribute("aria-label")) || ""
-        ).toLowerCase();
+            // Skip hidden elements
+            if (!(await input.isVisible())) {
 
-        const text =
-            `${type} ${id} ${name} ${placeholder} ${aria}`;
+                continue;
 
-        // Remember first editable input
-        if (!fallback) {
+            }
 
-            fallback = input;
+            // Remember first visible editable input
+            if (!fallback) {
+
+                fallback = input;
+
+            }
+
+            const type = (
+                (await input.getAttribute("type")) || ""
+            ).toLowerCase();
+
+            const id = (
+                (await input.getAttribute("id")) || ""
+            ).toLowerCase();
+
+            const name = (
+                (await input.getAttribute("name")) || ""
+            ).toLowerCase();
+
+            const placeholder = (
+                (await input.getAttribute("placeholder")) || ""
+            ).toLowerCase();
+
+            const aria = (
+                (await input.getAttribute("aria-label")) || ""
+            ).toLowerCase();
+
+            const text =
+                `${type} ${id} ${name} ${placeholder} ${aria}`;
+
+            if (
+
+                text.includes("user") ||
+
+                text.includes("email") ||
+
+                text.includes("login") ||
+
+                text.includes("account")
+
+            ) {
+
+                return input;
+
+            }
 
         }
 
-        // Username detection
-        if (
-            text.includes("user") ||
-            text.includes("email") ||
-            text.includes("login") ||
-            text.includes("account")
-        ) {
-
-            return input;
-
-        }
+        return fallback;
 
     }
-
-    return fallback;
-
-}
 
     /**
      * Future AI / Smart Locator support
@@ -116,7 +143,13 @@ export class LocatorService {
 
     ): Locator {
 
-        return SmartLocator.find(page, component);
+        return SmartLocator.find(
+
+            page,
+
+            component
+
+        );
 
     }
 

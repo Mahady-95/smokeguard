@@ -32,4 +32,6 @@ export interface ComponentInventory {
 
     elements: Component[];
 
+    //features: FeatureInventory;
+
 }

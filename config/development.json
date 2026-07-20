@@ -1,7 +1,7 @@
 {
     "applicationName": "SmokeGuard Demo",
 
-    "baseUrl": "https://demo.guru99.com/V1/index.php",
+    "baseUrl": "https://dev.bwtcc.jahajibd.com/",
 
     "username": "${USERNAME}",
 

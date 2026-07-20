@@ -13,6 +13,8 @@ import { PageLoadValidator } from "../validators/PageLoadValidator";
 
 import { ScreenshotManager } from "../managers/ScreenshotManager";
 
+import { ComponentValidator } from "../validators/ComponentValidator";
+
 export class CrawlerEngine {
 
     public static async crawl(): Promise<void> {
@@ -60,12 +62,25 @@ export class CrawlerEngine {
                     EventManager.getNetworkErrors();
 
                 const components: ComponentInventory =
-                    await ComponentService.discover(page);
+    await ComponentService.discover(page);
 
-                const passed =
-                    pageLoaded &&
-                    consoleErrors.length === 0 &&
-                    networkErrors.length === 0;
+// Validate every discovered component
+for (const component of components.elements) {
+
+    await ComponentValidator.validate(
+
+        page,
+
+        component
+
+    );
+
+}
+
+const passed =
+    pageLoaded &&
+    consoleErrors.length === 0 &&
+    networkErrors.length === 0;
 
                 const result: ValidationResult = {
 

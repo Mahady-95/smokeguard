@@ -8,7 +8,6 @@ export class ConsoleReport {
         const results = ResultManager.getAll();
 
         Logger.info("");
-
         Logger.info("============= SmokeGuard Report =============");
 
         Logger.info(`Total Pages : ${ResultManager.total()}`);
@@ -22,6 +21,47 @@ export class ConsoleReport {
             Logger.info(
                 `${result.passed ? "✅" : "❌"} ${result.pageName} (${result.executionTime} ms)`
             );
+
+            // -----------------------------
+            // Component Validation Summary
+            // -----------------------------
+
+            const totalComponents =
+                result.components.elements.length;
+
+            const validatedComponents =
+                result.components.elements.filter(
+                    component => component.validated
+                ).length;
+
+            const failedComponents =
+                totalComponents - validatedComponents;
+
+            Logger.info(
+                `   Components : ${validatedComponents}/${totalComponents}`
+            );
+
+            if (failedComponents > 0) {
+
+                Logger.warn(
+                    `   Failed Components : ${failedComponents}`
+                );
+
+                result.components.elements
+                    .filter(component => !component.validated)
+                    .forEach(component => {
+
+                        Logger.warn(
+                            `      • ${component.tag} (${component.selector})`
+                        );
+
+                    });
+
+            }
+
+            // -----------------------------
+            // Existing Error Reporting
+            // -----------------------------
 
             if (!result.passed) {
 
@@ -51,18 +91,19 @@ export class ConsoleReport {
 
                 if (result.screenshot) {
 
-                    Logger.info(`   Screenshot : ${result.screenshot}`);
+                    Logger.info(
+                        `   Screenshot : ${result.screenshot}`
+                    );
 
                 }
 
             }
 
+            Logger.info("");
+
         });
 
-        Logger.info("");
-
         Logger.info("=============================================");
-
         Logger.info("");
 
     }
