@@ -1,94 +1,58 @@
 import { Component } from "../models/Component";
-import { LocatorCandidate } from "../models/LocatorCandidate";
-import { SmartLocator } from "../models/SmartLocator";
 
 export class LocatorBuilder {
 
-    public static build(
+    public static build(component: Component): string {
 
-        component: Component
+        if (component.testId.trim()) {
 
-    ): SmartLocator {
-
-        const candidates: LocatorCandidate[] = [];
-
-        if (component.id) {
-
-            candidates.push({
-
-                selector: `#${component.id}`,
-
-                strategy: "id",
-
-                confidence: 100
-
-            });
+            return `[data-testid="${component.testId}"]`;
 
         }
 
-        if (component.name) {
+        if (component.ariaLabel.trim()) {
 
-            candidates.push({
-
-                selector:
-
-                    `[name="${component.name}"]`,
-
-                strategy: "name",
-
-                confidence: 95
-
-            });
+            return `[aria-label="${component.ariaLabel}"]`;
 
         }
 
-        if (component.placeholder) {
+        if (component.id.trim()) {
 
-            candidates.push({
-
-                selector:
-
-                    `[placeholder="${component.placeholder}"]`,
-
-                strategy: "placeholder",
-
-                confidence: 90
-
-            });
+            return `#${component.id}`;
 
         }
 
-        if (component.tag) {
+        if (component.name.trim()) {
 
-            candidates.push({
-
-                selector:
-
-                    component.tag,
-
-                strategy: "tag",
-
-                confidence: 25
-
-            });
+            return `[name="${component.name}"]`;
 
         }
 
-        candidates.sort(
+        if (component.placeholder.trim()) {
 
-            (a, b) =>
+            return `[placeholder="${component.placeholder}"]`;
 
-                b.confidence - a.confidence
+        }
 
-        );
+        if (component.label.trim()) {
 
-        return {
+            return `text=${component.label}`;
 
-            best: candidates[0],
+        }
 
-            candidates
+        if (component.role.trim()) {
 
-        };
+            return `[role="${component.role}"]`;
+
+        }
+
+        if (component.text.trim()) {
+
+            return `text=${component.text}`;
+
+        }
+
+        return component.selector;
 
     }
 

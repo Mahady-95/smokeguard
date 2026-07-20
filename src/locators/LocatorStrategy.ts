@@ -1,21 +1,35 @@
-export enum LocatorStrategy {
+export interface LocatorCandidate {
 
-    TestId = "test-id",
+    priority: number;
 
-    Label = "label",
+    type: string;
 
-    AriaLabel = "aria-label",
+    value: string;
 
-    Role = "role",
+}
 
-    Id = "id",
+export class LocatorStrategy {
 
-    Name = "name",
+    public static readonly PRIORITY = {
 
-    Placeholder = "placeholder",
+        DATA_TEST_ID: 1,
 
-    Text = "text",
+        ARIA_LABEL: 2,
 
-    Css = "css"
+        ID: 3,
+
+        NAME: 4,
+
+        PLACEHOLDER: 5,
+
+        ROLE: 6,
+
+        TEXT: 7,
+
+        CSS: 8,
+
+        XPATH: 9
+
+    };
 
 }
