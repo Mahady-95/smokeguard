@@ -27,3 +27,4 @@ export interface Component {
     enabled: boolean;
 
 }
+// tv app build -> chorki git> tv latest brunch -> app build> apk direct up 

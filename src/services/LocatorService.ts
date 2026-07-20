@@ -1,27 +1,39 @@
 import { Locator, Page } from "@playwright/test";
 
+import { Component } from "../models/Component";
+import { SmartLocator } from "../locators/SmartLocator";
+
 export class LocatorService {
 
+    /**
+     * Existing login/static locator support
+     */
     public static async find(
+
         page: Page,
-        selectors: string[]
+
+        locators: string[]
+
     ): Promise<Locator | null> {
 
-        for (const selector of selectors) {
+        for (const selector of locators) {
+
+            const locator = page.locator(selector).first();
 
             try {
 
-                const locator = page.locator(selector).first();
-
-                if (await locator.isVisible()) {
+                if (await locator.count() > 0) {
 
                     return locator;
 
                 }
 
             }
+
             catch {
+
                 // Ignore invalid selector
+
             }
 
         }
@@ -29,46 +41,82 @@ export class LocatorService {
         return null;
 
     }
-
     public static async findByInputAnalysis(
-        page: Page
-    ): Promise<Locator | null> {
+    page: Page
+): Promise<Locator | null> {
 
-        const inputs = page.locator("input");
+    const inputs = page.locator(
+        "input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset'])"
+    );
 
-        const count = await inputs.count();
+    const count = await inputs.count();
 
-        for (let i = 0; i < count; i++) {
+    let fallback: Locator | null = null;
 
-            const input = inputs.nth(i);
+    for (let i = 0; i < count; i++) {
 
-            const type =
-                (await input.getAttribute("type")) ?? "text";
+        const input = inputs.nth(i);
 
-            const name =
-                ((await input.getAttribute("name")) ?? "").toLowerCase();
+        const type = (
+            (await input.getAttribute("type")) || ""
+        ).toLowerCase();
 
-            if (type === "hidden") {
+        const id = (
+            (await input.getAttribute("id")) || ""
+        ).toLowerCase();
 
-                continue;
+        const name = (
+            (await input.getAttribute("name")) || ""
+        ).toLowerCase();
 
-            }
+        const placeholder = (
+            (await input.getAttribute("placeholder")) || ""
+        ).toLowerCase();
 
-            if (
-                type === "text" ||
-                type === "email" ||
-                name.includes("user") ||
-                name.includes("login") ||
-                name.includes("uid")
-            ) {
+        const aria = (
+            (await input.getAttribute("aria-label")) || ""
+        ).toLowerCase();
 
-                return input;
+        const text =
+            `${type} ${id} ${name} ${placeholder} ${aria}`;
 
-            }
+        // Remember first editable input
+        if (!fallback) {
+
+            fallback = input;
 
         }
 
-        return null;
+        // Username detection
+        if (
+            text.includes("user") ||
+            text.includes("email") ||
+            text.includes("login") ||
+            text.includes("account")
+        ) {
+
+            return input;
+
+        }
+
+    }
+
+    return fallback;
+
+}
+
+    /**
+     * Future AI / Smart Locator support
+     */
+    public static findComponent(
+
+        page: Page,
+
+        component: Component
+
+    ): Locator {
+
+        return SmartLocator.find(page, component);
 
     }
 
