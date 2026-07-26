@@ -12,7 +12,7 @@ export class DOMDiscoverer {
             const result: RawElement[] = [];
 
             const elements = document.querySelectorAll(
-                "a[href],button,[role='button']"
+                "a[href], button, [role='button'], .sidebar a, nav a, .menu-item, [role='menuitem'], li.nav-item a"
             );
 
             elements.forEach(element => {
@@ -21,9 +21,9 @@ export class DOMDiscoverer {
                     element.textContent?.trim() ?? "";
 
                 const href =
-                    element instanceof HTMLAnchorElement
+                    element instanceof HTMLAnchorElement && element.href
                         ? element.href
-                        : "";
+                        : (element.getAttribute("href") ?? "");
 
                 result.push({
 

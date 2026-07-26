@@ -28,7 +28,7 @@ export class ElementFilter {
                 return false;
             }
 
-            if (!element.visible) {
+            if (!element.visible && !element.href) {
                 return false;
             }
 

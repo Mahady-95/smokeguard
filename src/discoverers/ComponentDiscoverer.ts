@@ -253,6 +253,8 @@ export class ComponentDiscoverer {
 
             };
 
+            
+
             const inputElements =
                 Array.from(
                     document.querySelectorAll<HTMLInputElement>(
@@ -381,14 +383,36 @@ export class ComponentDiscoverer {
                             !disabled &&
                             !ariaDisabled
                         ,
-                        validated:false,
-                        
+                        validated: false,
+
                         locator: ""
 
 
                     };
 
                 });
+
+                console.log(
+
+    "=== INPUT ELEMENTS ===",
+
+    inputElements.map(input => ({
+
+        type: input.type,
+
+        id: input.id,
+
+        name: input.name,
+
+        placeholder: input.placeholder,
+
+        aria: input.getAttribute("aria-label"),
+
+        className: input.className
+
+    }))
+
+);
 
             return {
 
@@ -458,31 +482,25 @@ export class ComponentDiscoverer {
 
                             input.placeholder,
 
-                            input.getAttribute(
-                                "aria-label"
-                            ) || ""
+                            input.getAttribute("aria-label") || "",
 
-                        ].map(value =>
+                            input.className
 
-                            (
-                                value ||
-                                ""
-                            ).toLowerCase()
-
-                        );
+                        ]
+                            .join(" ")
+                            .toLowerCase();
 
                         return (
 
-                            values[0] ===
-                            "search" ||
+                            values.includes("search") ||
 
-                            values.some(value =>
+                            values.includes("keyword") ||
 
-                                value.includes(
-                                    "search"
-                                )
+                            values.includes("filter") ||
 
-                            )
+                            values.includes("find") ||
+
+                            values.includes("lookup")
 
                         );
 
@@ -495,7 +513,23 @@ export class ComponentDiscoverer {
 
                 filters:
                     document.querySelectorAll(
-                        ".filter,.filters,[data-filter],[aria-label*='filter' i]"
+
+                        ".pagination," +
+
+                        ".pager," +
+
+                        ".dataTables_paginate," +
+
+                        ".MuiTablePagination-root," +
+
+                        ".ant-pagination," +
+
+                        ".page-item," +
+
+                        "[aria-label*='pagination' i]," +
+
+                        "[class*='pagination']"
+
                     ).length,
 
                 elements

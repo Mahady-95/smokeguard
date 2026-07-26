@@ -1,4 +1,6 @@
 import { ComponentInventory } from "./ComponentInventory";
+import { ValidationExecutionResult } from "./ValidationExecutionResult";
+import { PageReadyResult } from "./PageReadyResult";
 
 export interface ValidationResult {
 
@@ -21,5 +23,9 @@ export interface ValidationResult {
     timestamp: string;
 
     components: ComponentInventory;
+
+    validations: ValidationExecutionResult[];
+
+    pageReady: PageReadyResult;
 
 }

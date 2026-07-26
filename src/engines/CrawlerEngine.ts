@@ -15,6 +15,11 @@ import { ScreenshotManager } from "../managers/ScreenshotManager";
 
 import { ComponentValidator } from "../validators/ComponentValidator";
 
+import { DecisionEngine } from "./DecisionEngine";
+import { ValidationRunner } from "./ValidationRunner";
+
+import { PageReadyService } from "../services/PageReadyService";
+
 export class CrawlerEngine {
 
     public static async crawl(): Promise<void> {
@@ -45,15 +50,25 @@ export class CrawlerEngine {
 
                 await page.goto(item.url, {
 
-                    waitUntil: "domcontentloaded"
+                    waitUntil: "networkidle"
 
                 });
 
+                const pageReady =
+
+                    await PageReadyService.wait(page);
+
+                await page.waitForTimeout(1000);
                 const executionTime =
                     Date.now() - started;
 
                 const pageLoaded =
+
+                    pageReady.ready &&
+
                     await PageLoadValidator.validate(page);
+
+                await page.waitForLoadState("networkidle");
 
                 const consoleErrors =
                     EventManager.getConsoleErrors();
@@ -62,26 +77,46 @@ export class CrawlerEngine {
                     EventManager.getNetworkErrors();
 
                 const components: ComponentInventory =
-    await ComponentService.discover(page);
 
-// Validate every discovered component
-for (const component of components.elements) {
+                    await ComponentService.discover(page);
 
-    await ComponentValidator.validate(
+                // Validate every discovered component
+                for (const component of components.elements) {
 
-        page,
+                    await ComponentValidator.validate(
 
-        component
+                        page,
 
-    );
+                        component
 
-}
+                    );
 
-const passed =
-    pageLoaded &&
-    consoleErrors.length === 0 &&
-    networkErrors.length === 0;
+                }
 
+                const passed =
+                    pageLoaded &&
+                    consoleErrors.length === 0 &&
+                    networkErrors.length === 0;
+
+
+
+                const executionPlan =
+                    DecisionEngine.buildPlan(
+                        components
+                    );
+
+                const validationResults =
+                    await ValidationRunner.run(
+
+                        page,
+
+                        item.name,
+
+                        components,
+
+                        executionPlan.tasks
+
+                    );
                 const result: ValidationResult = {
 
                     pageName: item.name,
@@ -103,7 +138,11 @@ const passed =
                     timestamp:
                         new Date().toISOString(),
 
-                    components
+                    components,
+
+                    validations: validationResults,
+
+                    pageReady
 
                 };
 
@@ -216,7 +255,25 @@ const passed =
                     timestamp:
                         new Date().toISOString(),
 
-                    components: emptyComponents
+                    components: emptyComponents,
+
+                    validations: [],
+
+                    pageReady: {
+
+                        ready: false,
+
+                        duration: 0,
+
+                        domReady: false,
+
+                        networkIdle: false,
+
+                        spinnerVisible: false,
+
+                        reason: "Page execution failed"
+
+                    }
 
                 });
 
